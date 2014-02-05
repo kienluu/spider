@@ -1,0 +1,5 @@
+/.idea/
+*.py[cod]
+._*
+.DS_Store
+*.jpg
