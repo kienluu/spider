@@ -30,6 +30,7 @@ class Spider(object):
         self.target_resolution = target_resolution
         self.start_gallery_page = start_url
         self.hostname = urlparse.urlparse(start_url).hostname
+        self.full_hostname = 'http://%s' % self.hostname
         self.image_page_urls = set()
         self.image_urls = set()
         self.save_directory = 'images%s' \
@@ -106,7 +107,7 @@ class Spider(object):
 
     def get_image_page(self, image_page_url):
         logger.info('Getting full size image url for %s' % image_page_url)
-        url = 'http://%s%s' % (self.hostname, image_page_url)
+        url = '%s%s' % (self.full_hostname, image_page_url)
         pq = PQ(url)
         # Warning, contains does will match even if text contains more then
         # searched string.
@@ -136,11 +137,10 @@ class Spider(object):
         if os.path.exists(save_path):
             return
         logger.info('Download %s to %s' % (src, save_path))
-        # TODO: Need to add referer from own website.  Otherwise you get a
-        # redirect.  e.g.:
-        # Referer: http://wallpaperswide.com/os_x_mountain_lion-wallpapers
-        #
-        thread = DownloadAsset('http://%s%s' % (self.hostname, src), save_path)
+        # Add Referer as own site as this site does a referer check
+        thread = DownloadAsset(
+            '%s%s' % (self.full_hostname, src), save_path,
+            headers=[('Referer', self.full_hostname)])
         thread.run()
 
     def create_directories(self):
