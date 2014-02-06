@@ -39,7 +39,7 @@ class Spider(object):
         self.skip_extensions = set(['.bmp'])
         self.page_count = 0
 
-        # Download thead and queue
+        # Download thread and queue
         self.max_workers = max_workers
         self.queue = Queue()
 
@@ -64,7 +64,7 @@ class Spider(object):
     def spider_gallery_page(self, url):
         logger.info('Spidering gallery page %s' % url)
         pq = PQ(url)
-        self.get_image_codes(pq)
+        self.get_images(pq)
         return pq
 
     def get_all_gallery_pages(self):
@@ -86,7 +86,7 @@ class Spider(object):
         self.page_count = page_length
         logger.info('Gallery has %d pages' % page_length)
 
-    def get_image_codes(self, pq):
+    def get_images(self, pq):
         logger.info('Discovering images on page.')
         anchor_list = pq('ul.wallpapers li.wall .mini-hud a')
 
@@ -136,6 +136,10 @@ class Spider(object):
         if os.path.exists(save_path):
             return
         logger.info('Download %s to %s' % (src, save_path))
+        # TODO: Need to add referer from own website.  Otherwise you get a
+        # redirect.  e.g.:
+        # Referer: http://wallpaperswide.com/os_x_mountain_lion-wallpapers
+        #
         thread = DownloadAsset('http://%s%s' % (self.hostname, src), save_path)
         thread.run()
 
@@ -160,8 +164,8 @@ class Spider(object):
 if __name__ == "__main__":
     spider = Spider(
         'http://wallpaperswide.com/mac-desktop-wallpapers',
-        start_page=1,
-        max_workers=20)
+        start_page=1, end_page=1,
+        max_workers=1)
     spider.run()
     # Rough Performance:
     # 148 1440x900 and totaling 10mb of images downloaded in:
